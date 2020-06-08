@@ -19,6 +19,8 @@ struct Listing: Decodable {
     
     struct ListingData: Decodable {
         let children: [PostData]
+        let before: String?
+        let after: String?
         
         struct PostData: Decodable {
             let data: Post
@@ -29,7 +31,7 @@ struct Listing: Decodable {
 /// Root of Reddit API response for comments
 struct CommentListing: Decodable {
     let data: CommentListingData
-    
+
     struct CommentListingData: Decodable {
         let children: [CommentData]
         
