@@ -13,10 +13,8 @@ struct PostList: View {
     let posts: [Post]
     let subreddit: String
     let sortBy: SortBy
-    let beforeId: String?
-    let afterId: String?
-    let loadBefore: () -> Void
-    let loadAfter: () -> Void
+    let loadBefore: (() -> Void)?
+    let loadAfter: (() -> Void)?
 
     @Binding var selectedPostId: String?
 
@@ -42,7 +40,7 @@ struct PostList: View {
                 return self.selectedPostId
         },
             set: { selectedPostId in
-                // Absorbing any change that NavigationLink does to its selection property
+                /// Absorbing any change that NavigationLink does to its selection property
         }
         )
     }
@@ -51,9 +49,9 @@ struct PostList: View {
         List(selection: selectedPostIds) {
             Section(header: Text("\(subreddit) | \(sortBy.rawValue)")) {
                 VStack {
-                    if self.beforeId != nil {
+                    if self.loadBefore != nil {
                         Button("Load previous posts") {
-                            self.loadBefore()
+                            self.loadBefore!()
                         }
 //                        SpinnerView()
 //                        .hidden()
@@ -83,18 +81,17 @@ struct PostList: View {
                                 self.selectedPostId = post.id
                         }
                     }
-                    if self.afterId == nil {
+                    if self.loadAfter == nil {
                         Text("No more posts")
                     }
                     else {
-                        Button("Load next posts") {
-                            self.loadAfter()
-                        }
-//                        SpinnerView()
-//                            .onAppear {
-//                                self.shouldLoadBefore = false
-//                                self.shouldLoadAfter = true
+//                        Button("Load next posts") {
+//                            self.loadAfter!()
 //                        }
+                        SpinnerView()
+                            .onAppear {
+                                self.loadAfter!()
+                        }
                     }
                 }
             }

@@ -21,7 +21,11 @@ struct ContentView : View {
 
     @State private var query: Dictionary<String, String> = ["raw_json":"1"]
     let pageSize: Int = 25
-    private func previousPageLoader(for listing: Listing) -> (() -> Void) {
+    private func previousPageLoader(for listing: Listing) -> (() -> Void)? {
+        guard let beforeId = listing.data.before else {
+            return nil
+        }
+
         return {
             var mutableQuery = self.query
             var count = (Int(mutableQuery["count"] ?? "0") ?? 0)
@@ -33,14 +37,18 @@ struct ContentView : View {
                 count += 1
             }
             mutableQuery["count"] = String(count)
-            mutableQuery["before"] = listing.data.before
+            mutableQuery["before"] = beforeId
             mutableQuery.removeValue(forKey: "after")
 
             self.query = mutableQuery
         }
     }
     
-    private func nextPageLoader(for listing: Listing) -> (() -> Void) {
+    private func nextPageLoader(for listing: Listing) -> (() -> Void)? {
+        guard let afterId = listing.data.after else {
+            return nil
+        }
+
         return {
             var mutableQuery = self.query
             var count = (Int(mutableQuery["count"] ?? "0") ?? 0)
@@ -54,7 +62,7 @@ struct ContentView : View {
 
             mutableQuery["count"] = String(count)
             mutableQuery.removeValue(forKey: "before")
-            mutableQuery["after"] = listing.data.after
+            mutableQuery["after"] = afterId
 
             self.query = mutableQuery
         }
@@ -71,8 +79,6 @@ struct ContentView : View {
                     PostList(posts: listing!.posts,
                              subreddit: self.state.subreddit,
                              sortBy: self.state.sortBy,
-                             beforeId: listing!.data.before,
-                             afterId: listing!.data.after,
                              loadBefore: self.previousPageLoader(for: listing!),
                              loadAfter: self.nextPageLoader(for: listing!),
                              selectedPostId: self.$selectedPostId)
